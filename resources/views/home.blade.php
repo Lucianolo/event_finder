@@ -447,19 +447,20 @@
   
     function getLocation() { //#stefano, questa è la funzione che dal navigator e chiama initialize(lat,lon) passandogli le coordinate appunto
         if(navigator.geolocation){
+            
         navigator.geolocation.getCurrentPosition(function(position){
            
             var var_map;
             var var_location;
 	        //#egeo dobbiamo mettere la autolocalizzazione dell'utente come latitudine e longitudine
-           
+	        
             var pos_json = {
                 lat:position.coords.latitude,
                 lon:position.coords.longitude
             };
             var lat = pos_json.lat;
             var lon = pos_json.lon;
-            
+            console.log(lat,lon)
             document.getElementById('lat_input').value = lat;
             document.getElementById('lng_input').value = lon;
             

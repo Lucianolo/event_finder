@@ -1,3 +1,11 @@
+## Issues to be fixed in Second Release:
+
+1) Seems like our app has a conflict with AdBlock/AdBlockPlus that doesn't allow the browser to ask for user's permission to share position.
+
+
+
+
+
 ## Laravel PHP Framework
 
 [![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
