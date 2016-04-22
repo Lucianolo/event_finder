@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+    <head>
+       
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- @Egeo -> Inserimento bootstrap3 framework per parte grafica-->
+        {!! Html::style('assets/css/bootstrap.css') !!}
+        <!-- @Egeo -> La cartella di boostrap si trova dentro public e si chiama assets -->
+        <!-- @Egeo ->Inserimento google maps -->
+         <style>
+         #map-container { height: 500px }
+	       .myInfobox {
+					border: solid 1px black;
+					background-color:rgba(255, 255, 255, 0.5);
+					width: 280px;
+					color: #000;
+					font-family: Arial;
+					font-size: 14px;
+					padding: .5em 1em;
+					border-radius: 10px;
+					font-weight: bold;
+					margin-left: -30px;
+					margin-top: -6px
+		  }
+    </style>
+        <!-- @egeo -> css per la ricerca -->
+        <style>
+        #custom-search-input{
+    padding: 3px;
+    border: solid 1px #E4E4E4;
+    border-radius: 6px;
+    background-color: #fff;
+}
+
+#custom-search-input input{
+    border: 0;
+    box-shadow: none;
+}
+
+#custom-search-input button{
+    margin: 2px 0 0 0;
+    background: none;
+    box-shadow: none;
+    border: 0;
+    color: #666666;
+    padding: 0 8px 0 10px;
+    border-left: solid 1px #ccc;
+}
+
+#custom-search-input button:hover{
+    border: 0;
+    box-shadow: none;
+    border-left: solid 1px #ccc;
+}
+
+#custom-search-input .glyphicon-search{
+    font-size: 23px;
+}
+.infoBox{
+    text-align:center;
+    background-color:#ffffff;
+    position:fixed;
+}
+#box-container{
+    position:fixed;
+    background-color:#337AB7;
+    top:70%;
+    height:30%;
+    width:100%;
+    color:#ffffff;
+}
+.da-x-button:hover{
+    cursor:pointer;
+}
+.da-x-button {
+    
+    width: 20px;
+    text-align: center;
+    position: absolute;
+    float: right;
+    right: 1em;
+    top: 1em;
+    height: 20px;
+    color: #ffffff;
+}
+
+.img-circle{
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    object-position: 0px 0px;
+}
+</style>
+        
+    </head>
+    <body>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6">
+           	<ul class="nav nav-pills">
+				<li class="active">
+					<a href="#">Home</a>
+				</li>
+				<li>
+					<a href="http://laravel-develop-app-p0f.c9users.io/profilo">Profilo</a>
+				</li>
+				<li>
+					<a href="#">Messaggi</a>
+				</li>
+			</ul>
+          </div>
+			<br>
+			
+			</br>
+               <div class="container">
+                   <!-- @EGEO controllo che la variabile non sia vuota per non incappare in una exception -->
+                     @if (!empty($response))
+                                  <?php
+                                  /*
+                                    //Faccio un decoding del json e lo faccio diventare un array associativo multidimensionale
+                                    $val=json_decode($response,true);
+                                    //Ciclo che scorre l'array multidimensionale
+                                    //var_dump($val);
+                                    
+                                    for($i = 0; $i < count($val['data']); $i++){
+                                        
+                                        //Controllo che la chiave di ricerca sia presente nel nome dell'evento
+                                        if(strpos(strtolower($val['data'][$i]['eventname']), strtolower((string)\Request::input('value')))!=false){
+                                            //Controllo che l'evento non sia passato tramite il campo label
+                                            //Dai test sembra che non funzioni, credo perchè pochi eventi hanno
+                                            // il  campo label, quindi è da implementare tramite data.
+                                            //if($val['data'][$i]['label']=='Upcoming'){
+                                                //echo "\n";
+                                                //echo $val['data'][$i]['event_id'];
+                                                //var_dump($val['data'][$i]['event_id']);
+                                                //echo "\n";
+                                                //echo $val['data'][$i]['eventname'];
+                                                //var_dump($val['data'][$i]['eventname']);
+                                        
+                                                //echo "\n";
+                                            }
+                                        //}
+                                    }
+                                   */
+                                  ?>
+                        <!-- Finisce qui la condizione per il controllo del filtro -->
+                        @endif
+                        
+	                <div class="row">
+	                     <div class="col-md-6">
+                               <h3>Cerca il tuo evento {{ Auth::user()->name }}</h3>
+                             <!-- Controllo che la variabile non sia vuota perchè si valorizza solo dopo avere fatto una ricerca e quindi dopo essere andata nella route /search-route -->
+                               <!-- @egeo valore inserito dentro la searchbox possiamo richiamarlo cosi -->
+                               <!-- Controllo perchè prima del loggin la variabile è vuoto uso un operatore ternario per valure l'espressionee -->
+                               <!-- <h2>Valore cercato: {{ !empty($valore) ? $valore : "" }}</h2> -->
+                                    <?php
+					                $UID =  Auth::user()->facebook_id ; //@federico-prova per pic
+					                 // @egeo commentato echo "<h4>Your user ID is ".$UID."</h4>" ;
+					                $profile_pic = "http://graph.facebook.com/".$UID."/picture?type=large";
+                                    echo "<img src=\"" . $profile_pic . "\" class=\"img-circle\"   />" ; //width=\"130px\"
+                                    //echo "<div style=\"background-image:url('" . $profile_pic . "')\" class=\"img-circle col-md-12\"  />" ; 
+					                ?>
+                </div>
+    
+        <div class="col-md-6 col-centered">
+    		<h1>EventSearch! </h1><h4>Un nuovo modo per cercare il divertimento</h4>
+                <div id="custom-search-input">
+              <form method="post" action="http://laravel-develop-app-p0f.c9users.io/search-route" name="f">
+                        <div class="input-group col-md-12">
+                            <input type="text" class="form-control input-lg" placeholder="Inserisci un evento" name="value"/>
+                                <span class="input-group-btn">
+                                    <input type="hidden"  name="_token" value="{{ csrf_token() }}"/>
+                                    <!-- getlocation prende in considerazione la mia latitudine e longitudine -->
+                                        <button  type="submit" class="btn btn-info btn-lg" type="button" placeholder="Nome evento"> <i class="glyphicon glyphicon-search"></i>
+             </form>
+                             </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+               
+               <br>
+               
+               </br>
+               
+               
+        <!-- @Egeo Mappa di google maps, bisogna localizzare-->    
+			  	   <body onload="initialize()">
+                <div id="map-container" class="col-md-12"></div>
+                <div id="box-container" class="col-md-12" style="display:none">
+                    <div id="box_content"></div>
+                    <div class="da-x-button"></div>
+                </div>
+                  </div> <!-- /body -->
+  
+  </div>
+</div>
+        
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/src/infobox.js"></script>
+    
+        
+    
+    
+    
+    <!-- @EGEO funzione javascript per la mappa -->
+    <script>
+    var lat;
+	var lon;
+	if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position);
+    }else{
+      alert('La geo-localizzazione NON è possibile');
+    }
+    function position(position) {
+      lat = position.coords.latitude
+      lon = position.coords.longitude; 
+    }
+    
+    //Funzione che inizializza la chiamata alla google maps dove viene parsato in JSON la request 
+    //in http di all events
+	function initialize() {
+	    
+	    
+	     //#egeo dobbiamo mettere la autolocalizzazione dell'utente come latitudine e longitudine
+        
+        var var_location = new google.maps.LatLng(41.9027835,12.4963655); 
+        //#stefano sostituiscco le coordinate con quelle fornite dalla geolocation di HTML5
+        
+	    //var var_location = new google.maps.LatLng(lat,lon); 
+	    
+	   //Faccio un decoding del json e lo faccio diventare un array associativo multidimensionale
+        //Utilizziamo JSON.parse dato che è javascript
+        //console.log("testing");
+       // var l=JSON.parse();
+        var l=jQuery.parseJSON(
+            JSON.stringify(
+            //Faccio un parsing della variabile $response
+            //se è vuoto allora non ritorno nulla
+            //se invece è piena allora ritorno il json parsato
+            
+            <?php 
+            
+            if (isset($response)) echo $response;
+            else echo "";
+            ?>
+            
+            ));
+	  
+
+		var var_mapoptions = {
+			 zoom: 14
+			,center: var_location
+			,mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+		
+		
+		
+		var box_container = document.getElementById('box-container');
+		var var_map = new google.maps.Map(document.getElementById('map-container'), var_mapoptions);
+        
+        //tumbh
+         //Con l.data.length conto la lunghezza dell'array parsato dal json
+        
+         
+		//var mappin = l.data[0].thumb_url; //->serve per marcare una zona
+		var marker = new google.maps.Marker({
+		    title: "Tu sei qui!",
+			map: var_map,
+			draggable: false,
+			//@fede - levare icon dato che non lo trova e non restituisce il marcatore
+			//icon: mappin,
+			position: var_location,
+			visible: true
+		});
+		var contentString = '<div class="infoWindowEvent"><h2>NOME EVENTO<h2></div>';
+		var BoxOptions = {
+		    content: contentString
+		};
+		
+		
+        /*var infowindow = new google.maps.InfoWindow({
+            content: contentString // dove content string è il codice HTML
+          });*/
+        
+        var var_infobox = new InfoBox(BoxOptions);
+        google.maps.event.addListener(marker, "click", function (e) {
+			var_infobox.open(var_map, marker); 
+			//infowindow.open(var_map, marker); //Ho sostituito la vecchia variabile var_infobox alla nuova infowindow
+		});
+
+
+        //@fede- trasformo l'input della barra di ricerca php in valore js
+        var tmp='<?php echo strtolower((string)\Request::input('value')); ?>';
+        
+        
+         for(var i = 0; i < 20; i++){
+        //@fede - cicla tutti gli eventi e mette il relativo marker nella mappa
+            var str=l.data[i].eventname; 
+            if(str.indexOf(tmp)!=-1) {
+        
+		            var var_location1 = { lat:l.data[i].venue.latitude, lng: l.data[i].venue.longitude};
+		            
+                    
+                    var marker1 = new google.maps.Marker({
+                        
+		                title: l.data[i].eventname,
+			            map: var_map,
+			            position: var_location1,
+			            visible: true
+		            });
+                 
+                    /*
+                    var cString =
+                        '<div class="popup">'+
+                        '<a target="_blank" href="https://google.it">'+
+                        'google &#187;</a> '+
+                        '</div>';
+                 
+                    //@fede- funzione che aggiunge l'evento al listener
+                    attachMessage(marker1, cString);
+                    */
+                    var content_info = l.data[i].eventname;
+                    var contentString2 = '<div class="infoWindowEvent"><h2>'+str+'</h2><div class="info">Luogo</div><div onclick="closeBox()" class="da-x-button">X</div></div>';
+            		var BoxOptions2 = {
+            		    boxStyle: {
+            		        
+                		  width:"100%",
+                		  height:"200px"
+                		},
+            		    content: contentString2
+            		};
+            		
+            		
+                    /*var infowindow = new google.maps.InfoWindow({
+                        content: contentString // dove content string è il codice HTML
+                      });*/
+                      
+                    
+                    var var_infobox2 = new InfoBox(BoxOptions2);
+                    google.maps.event.addListener(marker1, "click", function (e) {
+            			var_infobox2.open(box_container, marker1); //la prima variabile era "var_map", ma noi lo vogliamo fuori dalla mappa
+            			var_infobox2.setVisible(false);
+            			box_container.innerHTML = var_infobox2.getContent();
+            			box_container.style.display = 'block';
+            			//infowindow.open(var_map, marker); //Ho sostituito la vecchia variabile var_infobox alla nuova infowindow
+            			});  
+                    
+                
+            }
+        //qui finisce il for
+        }
+
+	}
+	
+	
+	function attachMessage(marker, secretMessage) {
+        var infowindow = new google.maps.InfoWindow({
+            content: secretMessage
+        });
+
+        marker.addListener('click', function() {
+            infowindow.open(marker.get('map'), marker);
+        });
+	}
+	function closeBox(){
+            var box_container3 = document.getElementById('box-container');
+            box_container3.style.display= 'none';
+        }
+</script>
+        		
+</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+      
+					 
+        <!-- @Egeo -> Inserimento bootstrap3 framework per parte grafica-->
+        {!! Html::script('assets/js/bootstrap.min.js') !!}
+         <!-- @Egeo -> La cartella di boostrap si trova dentro public e si chiama assets -->
+    </body>
+</html>
